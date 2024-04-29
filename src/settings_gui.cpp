@@ -49,6 +49,8 @@
 #include "video/video_driver.hpp"
 #include "social_integration.h"
 #include "sound_func.h"
+#include "hotkeys.h"
+#include <iostream>
 
 #include "safeguards.h"
 
@@ -356,6 +358,10 @@ private:
 	std::vector<SocialIntegrationPlugin *> plugins;
 };
 
+int _debug_counter = 0;
+uint32_t _debug_key = 0;
+uint16_t _debug_keycode = 0;
+
 /** Construct nested container widget for managing the list of social plugins. */
 std::unique_ptr<NWidgetBase> MakeNWidgetSocialPlugins()
 {
@@ -550,7 +556,47 @@ struct GameOptionsWindow : Window {
 				plugin->SetStringParameters(widget);
 				break;
 			}
+
+			case WID_GO_CONTROLS_DEBUG_KEY:
+				std::string text_representation_of_key = KeycodeToString(_debug_keycode);
+				SetDParamStr(0, fmt::format("Test {} {:x} {:x} {}", _debug_counter, _debug_key, _debug_keycode, text_representation_of_key));
+				break;
 		}
+	}
+
+	EventState OnKeyPress([[maybe_unused]] char32_t key, [[maybe_unused]] uint16_t keycode) override
+	{
+		// Ignore the keypress if the controls tab is not active
+		if (this->active_tab != WID_GO_TAB_CONTROLS) {
+			return ES_NOT_HANDLED;
+		}
+
+		_debug_counter++;
+		_debug_key = key;
+		_debug_keycode = keycode;
+
+		// Mark the widget as dirty, when a keypress occurs
+		auto controls_debug_widget = this->GetWidget<NWidgetBase>(WID_GO_CONTROLS_DEBUG_KEY);
+		if (controls_debug_widget != nullptr) {
+			controls_debug_widget->SetDirty(this);
+		}
+
+		auto hotkeys_lists = getHotkeyLists();
+
+		for (HotkeyList *list : *hotkeys_lists) {
+			const bool has_global_key_handler = list->global_hotkey_handler != nullptr;
+			std::cout << "Group: " << list->getIniGroup() << (has_global_key_handler ? "(global)" : "") << std::endl;
+
+			for (const Hotkey& hotkey : list->getItems()) {
+				std::cout << "- Hotkey: " << hotkey.name << " (num:" << hotkey.num << ")" << std::endl;
+
+				for (auto keycode : hotkey.keycodes) {
+					std::cout << "-- Keycode: " << keycode << " (" << KeycodeToString(keycode) << ")" << std::endl;
+				}
+			}
+		}
+
+		return ES_HANDLED;
 	}
 
 	void DrawWidget(const Rect &r, WidgetID widget) const override
@@ -592,7 +638,7 @@ struct GameOptionsWindow : Window {
 
 	void SetTab(WidgetID widget)
 	{
-		this->SetWidgetsLoweredState(false, WID_GO_TAB_GENERAL, WID_GO_TAB_GRAPHICS, WID_GO_TAB_SOUND, WID_GO_TAB_SOCIAL);
+		this->SetWidgetsLoweredState(false, WID_GO_TAB_GENERAL, WID_GO_TAB_GRAPHICS, WID_GO_TAB_SOUND, WID_GO_TAB_SOCIAL, WID_GO_TAB_CONTROLS);
 		this->LowerWidget(widget);
 		GameOptionsWindow::active_tab = widget;
 
@@ -602,6 +648,7 @@ struct GameOptionsWindow : Window {
 			case WID_GO_TAB_GRAPHICS: pane = 1; break;
 			case WID_GO_TAB_SOUND: pane = 2; break;
 			case WID_GO_TAB_SOCIAL: pane = 3; break;
+			case WID_GO_TAB_CONTROLS: pane = 4; break;
 			default: NOT_REACHED();
 		}
 
@@ -697,6 +744,7 @@ struct GameOptionsWindow : Window {
 			case WID_GO_TAB_GRAPHICS:
 			case WID_GO_TAB_SOUND:
 			case WID_GO_TAB_SOCIAL:
+			case WID_GO_TAB_CONTROLS:
 				this->SetTab(widget);
 				break;
 
@@ -1013,6 +1061,7 @@ static constexpr NWidgetPart _nested_game_options_widgets[] = {
 			NWidget(WWT_TEXTBTN, COLOUR_YELLOW, WID_GO_TAB_GRAPHICS), SetMinimalTextLines(2, 0), SetDataTip(STR_GAME_OPTIONS_TAB_GRAPHICS, STR_GAME_OPTIONS_TAB_GRAPHICS_TT), SetFill(1, 0),
 			NWidget(WWT_TEXTBTN, COLOUR_YELLOW, WID_GO_TAB_SOUND),    SetMinimalTextLines(2, 0), SetDataTip(STR_GAME_OPTIONS_TAB_SOUND, STR_GAME_OPTIONS_TAB_SOUND_TT), SetFill(1, 0),
 			NWidget(WWT_TEXTBTN, COLOUR_YELLOW, WID_GO_TAB_SOCIAL),   SetMinimalTextLines(2, 0), SetDataTip(STR_GAME_OPTIONS_TAB_SOCIAL, STR_GAME_OPTIONS_TAB_SOCIAL_TT), SetFill(1, 0),
+			NWidget(WWT_TEXTBTN, COLOUR_YELLOW, WID_GO_TAB_CONTROLS), SetMinimalTextLines(2, 0), SetDataTip(STR_GAME_OPTIONS_TAB_CONTROLS, STR_GAME_OPTIONS_TAB_CONTROLS_TT), SetFill(1, 0),
 		EndContainer(),
 	EndContainer(),
 	NWidget(WWT_PANEL, COLOUR_GREY),
@@ -1173,6 +1222,12 @@ static constexpr NWidgetPart _nested_game_options_widgets[] = {
 			NWidget(NWID_VERTICAL), SetPadding(WidgetDimensions::unscaled.sparse), SetPIP(0, WidgetDimensions::unscaled.vsep_wide, 0),
 				NWidgetFunction(MakeNWidgetSocialPlugins),
 			EndContainer(),
+
+			/* Controls tab */
+			NWidget(NWID_VERTICAL), SetPadding(WidgetDimensions::unscaled.sparse), SetPIP(0, WidgetDimensions::unscaled.vsep_sparse, 0),
+				NWidget(WWT_TEXT, COLOUR_GREY, WID_GO_CONTROLS_DEBUG_KEY), SetMinimalSize(0, 12), SetFill(1, 0), SetDataTip(STR_GAME_OPTIONS_CONTROLS_DEBUG_KEY_DISPLAY, STR_NULL),
+			EndContainer(),
+
 		EndContainer(),
 	EndContainer(),
 };

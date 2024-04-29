@@ -951,6 +951,8 @@ STR_GAME_OPTIONS_TAB_SOUND                                      :Sound
 STR_GAME_OPTIONS_TAB_SOUND_TT                                   :{BLACK}Choose sound and music settings
 STR_GAME_OPTIONS_TAB_SOCIAL                                     :Social
 STR_GAME_OPTIONS_TAB_SOCIAL_TT                                  :{BLACK}Choose social integration settings
+STR_GAME_OPTIONS_TAB_CONTROLS                                   :Controls
+STR_GAME_OPTIONS_TAB_CONTROLS_TT                                :{BLACK}Choose controls settings
 
 STR_GAME_OPTIONS_VOLUME                                         :Volume
 STR_GAME_OPTIONS_SFX_VOLUME                                     :Sound effects
@@ -1104,6 +1106,8 @@ STR_GAME_OPTIONS_SOCIAL_PLUGIN_STATE_UNLOADED                   :{RED}Unloaded
 STR_GAME_OPTIONS_SOCIAL_PLUGIN_STATE_DUPLICATE                  :{RED}Duplicated plugin
 STR_GAME_OPTIONS_SOCIAL_PLUGIN_STATE_UNSUPPORTED_API            :{RED}Unsupported version
 STR_GAME_OPTIONS_SOCIAL_PLUGIN_STATE_INVALID_SIGNATURE          :{RED}Invalid signature
+
+STR_GAME_OPTIONS_CONTROLS_DEBUG_KEY_DISPLAY                     :{BLACK}Pressed {RAW_STRING}
 
 STR_BASESET_STATUS                                              :{RAW_STRING} {RED}({NUM} missing/corrupted file{P "" s})
 

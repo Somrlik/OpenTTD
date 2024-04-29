@@ -45,6 +45,9 @@ struct HotkeyList {
 
 	int CheckMatch(uint16_t keycode, bool global_only = false) const;
 
+	const std::string getIniGroup();
+	const std::vector<Hotkey> getItems();
+
 	GlobalHotkeyHandlerFunc global_hotkey_handler;
 private:
 	const std::string ini_group;
@@ -62,6 +65,8 @@ bool IsQuitKey(uint16_t keycode);
 void LoadHotkeysFromConfig();
 void SaveHotkeysToConfig();
 
+std::string KeycodeToString(uint16_t keycode);
+std::vector<HotkeyList*>* getHotkeyLists();
 
 void HandleGlobalHotkeys(char32_t key, uint16_t keycode);
 

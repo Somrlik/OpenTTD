@@ -24,6 +24,11 @@ std::string _hotkeys_file;
  */
 static std::vector<HotkeyList*> *_hotkey_lists = nullptr;
 
+std::vector<HotkeyList*>* getHotkeyLists()
+{
+	return _hotkey_lists;
+}
+
 /** String representation of a keycode */
 struct KeycodeNames {
 	const std::string_view name; ///< Name of the keycode
@@ -168,7 +173,7 @@ static void ParseHotkeys(Hotkey &hotkey, const char *value)
  * @param keycode The keycode to convert to a string.
  * @return A string representation of this keycode.
  */
-static std::string KeycodeToString(uint16_t keycode)
+std::string KeycodeToString(uint16_t keycode)
 {
 	std::string str;
 	if (keycode & WKC_GLOBAL_HOTKEY) {
@@ -318,6 +323,15 @@ int HotkeyList::CheckMatch(uint16_t keycode, bool global_only) const
 	return -1;
 }
 
+const std::string HotkeyList::getIniGroup()
+{
+    return std::string(this->ini_group);
+}
+
+const std::vector<Hotkey> HotkeyList::getItems()
+{
+    return this->items;
+}
 
 static void SaveLoadHotkeys(bool save)
 {
